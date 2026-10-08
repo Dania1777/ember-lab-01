@@ -108,3 +108,18 @@ get 0
 ### Uninitialized memory
 Removing {} from Byte data[MEM_SIZE] produced garbage bytes.
 Restoring {} zero-initialized the memory again.
+### sizeof
+
+| Type | Size |
+|---|---:|
+| char | 1 |
+| int | 4 |
+| float | 4 |
+| double | 8 |
+| void* | 8 |
+
+### Fresh dump
+
+0000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
