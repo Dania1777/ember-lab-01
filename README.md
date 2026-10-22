@@ -123,3 +123,68 @@ Restoring {} zero-initialized the memory again.
 0000  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 0010  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
 0020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+
+---
+
+## Lab 2 — Bits Don't Lie: ALU and CPU
+
+### ALU operations
+
+The ALU works with 8-bit values (0..255).
+
+| Operation | Opcode | Description |
+|---|---:|---|
+| HALT | 0x00 | Stop the CPU |
+| NOP | 0x01 | Do nothing |
+| ADD | 0x10 | Add A and B |
+| SUB | 0x11 | Subtract B from A |
+| AND | 0x12 | Bitwise AND |
+| OR | 0x13 | Bitwise OR |
+| XOR | 0x14 | Bitwise XOR |
+| NOT | 0x15 | Invert all bits of A |
+| SHL | 0x16 | Shift A left by one bit |
+| SHR | 0x17 | Shift A right by one bit |
+| INC | 0x18 | Increment A |
+| DEC | 0x19 | Decrement A |
+
+### Carry examples
+
+```text
+ember> alu add 200 100
+result=44 Z=0 N=0 C=1
+
+ember> alu add 255 1
+result=0 Z=1 N=0 C=1
+```
+
+The result is stored in one byte. Overflow beyond 255 sets C=1.
+
+### Logical operation examples
+
+```text
+ember> alu and 12 10
+result=8 Z=0 N=0 C=0
+
+ember> alu shl 5
+result=10 Z=0 N=0 C=0
+```
+
+### CPU instruction trace
+
+```text
+ember> reg a 7
+ember> reg b 1
+ember> set 0 18
+ember> set 1 0
+ember> step
+ember> regs
+PC=1 A=1 B=1 Z=0 N=0 C=0
+ember> step
+ember> regs
+PC=2 A=1 B=1 Z=0 N=0 C=0
+```
+
+The first instruction performs AND (opcode 18 decimal).
+The second instruction is HALT (opcode 0).
+PC advances by one byte for each instruction.
+The CPU stops executing after HALT.
