@@ -171,20 +171,23 @@ result=10 Z=0 N=0 C=0
 
 ### CPU instruction trace
 
+### CPU instruction trace
+
 ```text
 ember> reg a 7
 ember> reg b 1
 ember> set 0 18
-ember> set 1 0
+ember> set 1 22
+ember> set 2 0
 ember> step
 ember> regs
 PC=1 A=1 B=1 Z=0 N=0 C=0
 ember> step
 ember> regs
-PC=2 A=1 B=1 Z=0 N=0 C=0
+PC=2 A=2 B=1 Z=0 N=0 C=0
+ember> step
+ember> regs
+PC=3 A=2 B=1 Z=0 N=0 C=0
 ```
 
-The first instruction performs AND (opcode 18 decimal).
-The second instruction is HALT (opcode 0).
-PC advances by one byte for each instruction.
-The CPU stops executing after HALT.
+The first instruction performs AND (opcode 18 decimal). The second instruction performs SHL (opcode 22 decimal). The third instruction is HALT (opcode 0). PC advances by one byte for each instruction.
