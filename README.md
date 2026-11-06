@@ -191,3 +191,68 @@ PC=3 A=2 B=1 Z=0 N=0 C=0
 ```
 
 The first instruction performs AND (opcode 18 decimal). The second instruction performs SHL (opcode 22 decimal). The third instruction is HALT (opcode 0). PC advances by one byte for each instruction.
+---
+
+## Lab 3 — Addresses, not names
+
+### 16-bit memory access
+
+Implemented `get16` and `set16` using little-endian byte order:
+the lower byte is stored first, followed by the higher byte.
+
+For example, `0x1234` is stored as `34 12`.
+
+### CPU instructions
+
+Implemented the instructions from the `0x2_` group:
+`LOADI`, `LOAD`, `STORE`, `MOV`, `LOADH`, `INCH` and `DECH`.
+
+Also implemented `OUT`, `OUTN` and the `run` command.
+The `run` command executes instructions until `HALT` or the execution limit.
+
+### Memory regions and H register
+
+The program is stored starting at address `0x000`.
+Data is stored starting at address `0x800`.
+
+The program was tested using both absolute memory addresses and the H address register.
+The H-register test produced the output:
+
+```text
+AB
+```
+### Register trace
+
+After executing the program, the registers showed:
+
+PC=9 H=2049 A=66 B=0 Z=0 N=0 C=0
+
+### Host pointers and guest addresses
+
+`Memory* mem` is a host pointer to the actual C++ memory object.
+
+`pc` and `h` are guest addresses. They are 16-bit numbers used by the emulated computer to access its own memory.
+
+A host pointer and a guest address are different things and must not be confused.
+
+### AddressSanitizer experiment
+
+A temporary program attempted to write beyond the memory array:
+
+`mem.data[MEM_SIZE] = 1;`
+
+AddressSanitizer detected:
+
+`ERROR: AddressSanitizer: stack-buffer-overflow`
+
+This means the program attempted to write outside the memory array. The experiment was performed in a separate temporary file, and the bounds checks in Ember remained in place.
+
+### Verification
+
+The official Lab 3 checks passed. The program produced:
+
+`AB`
+
+The final register state was:
+
+`PC=9 H=2049 A=66 B=0 Z=0 N=0 C=0`

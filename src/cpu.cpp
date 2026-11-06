@@ -20,6 +20,76 @@ void step(CPU& cpu) {
     case OP_NOP:
         cpu.pc += 1;
         break;
+    
+        case OP_OUT:
+        std::cout << static_cast<char>(cpu.a);
+        cpu.pc += 1;
+        break;
+
+    case OP_OUTN:
+        std::cout << static_cast<int>(cpu.a);
+        cpu.pc += 1;
+        break;
+        case OP_LOADI_A:
+        cpu.a = mem_get(*cpu.mem, cpu.pc + 1);
+        cpu.pc += 2;
+        break;
+
+    case OP_LOADI_B:
+        cpu.b = mem_get(*cpu.mem, cpu.pc + 1);
+        cpu.pc += 2;
+        break;
+        
+        case OP_LOAD_A:
+        cpu.a = mem_get(*cpu.mem, get16(*cpu.mem, cpu.pc + 1));
+        cpu.pc += 3;
+        break;
+
+    case OP_LOAD_B:
+        cpu.b = mem_get(*cpu.mem, get16(*cpu.mem, cpu.pc + 1));
+        cpu.pc += 3;
+        break;
+        case OP_STORE_A:
+        mem_set(*cpu.mem, get16(*cpu.mem, cpu.pc + 1), cpu.a);
+        cpu.pc += 3;
+        break;
+
+    case OP_STORE_B:
+        mem_set(*cpu.mem, get16(*cpu.mem, cpu.pc + 1), cpu.b);
+        cpu.pc += 3;
+        break;
+        case OP_MOV_A_B:
+        cpu.a = cpu.b;
+        cpu.pc += 1;
+        break;
+
+    case OP_MOV_B_A:
+        cpu.b = cpu.a;
+        cpu.pc += 1;
+        break;
+
+        case OP_LOADH:
+        cpu.h = get16(*cpu.mem, cpu.pc + 1);
+        cpu.pc += 3;
+        break;
+        case OP_LOAD_A_H:
+        cpu.a = mem_get(*cpu.mem, cpu.h);
+        cpu.pc += 1;
+        break;
+
+    case OP_STORE_A_H:
+        mem_set(*cpu.mem, cpu.h, cpu.a);
+        cpu.pc += 1;
+        break;
+        case OP_INCH:
+        cpu.h += 1;
+        cpu.pc += 1;
+        break;
+
+    case OP_DECH:
+        cpu.h -= 1;
+        cpu.pc += 1;
+        break;                        
 
     case OP_ADD:
         cpu.a = alu_add(cpu.a, cpu.b, cpu.f);
@@ -79,6 +149,7 @@ void step(CPU& cpu) {
 
 void dump_regs(const CPU& cpu) {
     std::cout << "PC=" << cpu.pc
+              << " H=" << cpu.h
               << " A=" << static_cast<int>(cpu.a)
               << " B=" << static_cast<int>(cpu.b)
               << " Z=" << cpu.f.z

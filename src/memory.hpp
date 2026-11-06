@@ -30,3 +30,8 @@ Byte mem_get(const Memory& mem, std::size_t addr);
 // outside the box. Returning false is how main.cpp knows to print a message.
 // TODO(lab-01, M3): implement in memory.cpp.
 bool mem_set(Memory& mem, std::size_t addr, Byte value);
+// Read two bytes as one 16-bit value.
+std::uint16_t get16(const Memory& mem, std::size_t addr);
+
+// Write a 16-bit value as two bytes, low byte first.
+bool set16(Memory& mem, std::size_t addr, std::uint16_t value);

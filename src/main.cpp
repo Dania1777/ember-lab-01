@@ -39,6 +39,7 @@ static void print_help() {
               << "  regs              show CPU registers and flags\n"
               << "  alu <op> <a> [b]  test an ALU operation\n"
               << "  step              execute one CPU instruction\n"
+              << "  run               execute until HALT\n"
               << "  help              this list\n"
               << "  quit              leave\n";
 }
@@ -160,8 +161,21 @@ cpu.mem = &mem;
                 } else if (cmd == "regs") {
             dump_regs(cpu);
         } else if (cmd == "step") {
-            step(cpu);
-        } else if (cmd == "inc") {
+    step(cpu);
+} else if (cmd == "run") {
+    int count = 0;
+
+    while (!cpu.halted && count < 10000) {
+        step(cpu);
+        count++;
+    }
+
+    if (!cpu.halted) {
+        std::cout << "\nexecution limit reached\n";
+    } else {
+        std::cout << '\n';
+    }
+} else if (cmd == "inc") {
 
         std::string a;
         long addr = 0;
