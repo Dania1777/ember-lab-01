@@ -27,7 +27,20 @@ static bool parse_number(const std::string& word, long& out) {
         return false;
     }
 }
+static std::uint16_t find_byte(
+    const Memory& mem,
+    std::uint16_t lo,
+    std::uint16_t hi,
+    Byte needle
+) {
+    for (std::uint16_t i = lo; i < hi; ++i) {
+        if (mem_get(mem, i) == needle) {
+            return i;
+        }
+    }
 
+    return hi;
+}
 
 static void print_help() {
     std::cout << "commands:\n"
@@ -97,7 +110,7 @@ cpu.mem = &mem;
             } else if (value < 0 || value > 255) {
                 // A cell holds ONE byte. 256 does not fit. Lab 1, theory 3.
                 std::cout << "a byte is 0..255, got " << value << '\n';
-            
+
             } else if (!mem_set(mem, (std::size_t)addr, (Byte)value)) {
                 std::cout << "address " << addr << " is outside 0.." << MEM_SIZE - 1
                           << '\n';
@@ -116,7 +129,7 @@ cpu.mem = &mem;
                         } else {
                 std::cout << "unknown register: " << r << '\n';
             }
-            
+
         } else if (cmd == "alu") {
             std::string operation, sa, sb;
             long a = 0, b = 0;
@@ -187,7 +200,33 @@ cpu.mem = &mem;
             Byte value = mem_get(mem, (std::size_t)addr);
             value += 1;
             mem_set(mem, (std::size_t)addr, value);
-        }  
+                }
+        } else if (cmd == "find") {
+            std::string slo, shi, sbyte;
+            long lo = 0, hi = 0, value = 0;
+
+            if (!(words >> slo >> shi >> sbyte) ||
+                !parse_number(slo, lo) ||
+                !parse_number(shi, hi) ||
+                !parse_number(sbyte, value)) {
+                std::cout << "usage: find <lo> <hi> <byte>\n";
+            } else if (lo < 0 || hi < lo || hi > static_cast<long>(MEM_SIZE) ||
+                       value < 0 || value > 255) {
+                std::cout << "invalid range or byte value\n";
+            } else {
+                std::uint16_t result = find_byte(
+                    mem,
+                    static_cast<std::uint16_t>(lo),
+                    static_cast<std::uint16_t>(hi),
+                    static_cast<Byte>(value)
+                );
+
+                if (result == hi) {
+                    std::cout << "not found\n";
+                } else {
+                    std::cout << "found at address " << result << '\n';
+                }
+            }
         } else {
             std::cout << "unknown command: " << cmd << " (try `help`)\n";
         }

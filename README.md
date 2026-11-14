@@ -256,3 +256,165 @@ The official Lab 3 checks passed. The program produced:
 The final register state was:
 
 `PC=9 H=2049 A=66 B=0 Z=0 N=0 C=0`
+---
+
+## Lab 4 — The Shape of Control
+
+### CPU control flow instructions
+
+Implemented the following instructions:
+
+| Instruction | Opcode | Description |
+|---|---:|---|
+| CMP | 0x1A | Compare registers A and B and update flags |
+| JMP | 0x30 | Unconditional jump |
+| JZ | 0x31 | Jump if zero flag is set |
+| JNZ | 0x32 | Jump if zero flag is not set |
+
+The CPU uses the `switch` statement in `step()` to select and execute instructions.
+
+Unknown opcodes stop the CPU and display an error message.
+
+### Conditional jumps
+
+- `JMP` changes the program counter to the specified address.
+- `JZ` jumps when `Z = 1`.
+- `JNZ` jumps when `Z = 0`.
+- A taken jump sets PC directly to the target address.
+- A jump that is not taken advances PC by three bytes.
+
+### Countdown program
+
+The countdown program prints:
+
+```text
+3 2 1
+```
+
+Program listing:
+
+| Address | Byte | Instruction |
+|---:|---:|---|
+| 0x000 | 0x20 | LOADI |
+| 0x001 | 0x03 | Immediate value 3 |
+| 0x002 | 0x03 | OUTN |
+| 0x003 | 0x19 | DEC |
+| 0x004 | 0x32 | JNZ |
+| 0x005 | 0x02 | Target address low byte |
+| 0x006 | 0x00 | Target address high byte |
+| 0x007 | 0x00 | HALT |
+
+### Countdown execution trace
+
+| Instruction | A | Z | PC after execution |
+|---|---:|---:|---:|
+| LOADI 3 | 3 | 0 | 2 |
+| OUTN | 3 | 0 | 3 |
+| DEC | 2 | 0 | 4 |
+| JNZ 2 | 2 | 0 | 2 |
+| OUTN | 2 | 0 | 3 |
+| DEC | 1 | 0 | 4 |
+| JNZ 2 | 1 | 0 | 2 |
+| OUTN | 1 | 0 | 3 |
+| DEC | 0 | 1 | 4 |
+| JNZ 2 | 0 | 1 | 7 |
+| HALT | 0 | 1 | 8 |
+
+### C++ control flow
+
+The countdown demonstrates the same logic as a C++ `while` loop:
+
+```cpp
+int count = 3;
+
+while (count > 0) {
+    std::cout << count << ' ';
+    count--;
+}
+```
+
+The loop repeats while the condition is true and stops when the counter reaches zero.
+
+### Memory search
+
+Implemented the `find` command and the `find_byte()` helper function.
+
+Example:
+
+```text
+ember> set 100 65
+ember> find 100 110 65
+found at address 100
+```
+
+The search checks memory addresses in the range from `lo` inclusive to `hi` exclusive.
+
+The implementation uses a `for` loop and returns the address of the first matching byte. If the value is not found, it returns the end of the range.
+
+### Execution limit
+
+The `run` command has a 10,000-instruction execution limit to prevent an infinite program from running forever.
+
+### Verification
+
+The project builds successfully with:
+
+```bash
+cmake --build build
+```
+
+The countdown program produces the expected output:
+
+```text
+3 2 1
+```
+### Linear search inside Ember
+
+The guest program searches for byte `0x41` in the eight-byte memory region starting at `0x800`.
+
+The H register stores the current memory address. `INCH` moves to the next byte. `CMP` compares the loaded byte with the target value. `JZ` jumps to the result when the values match.
+
+The program checks the end of the region at `0x808`. If the byte is not found, it prints `255`.
+
+#### Program listing
+
+| Address | Byte | Instruction |
+|---:|---:|---|
+| 0x000 | 0x28 | LOADH H |
+| 0x001 | 0x00 | Address low byte |
+| 0x002 | 0x08 | Address high byte |
+| 0x003 | 0x21 | LOADI B |
+| 0x004 | 0x41 | Search value |
+| 0x005 | 0x29 | loop: LOAD A, [H] |
+| 0x006 | 0x1A | CMP A, B |
+| 0x007 | 0x31 | JZ found |
+| 0x008 | 0x17 | Target low byte |
+| 0x009 | 0x00 | Target high byte |
+| 0x00A | 0x2B | INCH |
+| 0x00B | 0x2D | HLOW |
+| 0x00C | 0x21 | LOADI B |
+| 0x00D | 0x08 | End address low byte |
+| 0x00E | 0x1A | CMP A, B |
+| 0x00F | 0x31 | JZ not_found |
+| 0x010 | 0x1A | Target low byte |
+| 0x011 | 0x00 | Target high byte |
+| 0x012 | 0x21 | LOADI B |
+| 0x013 | 0x41 | Search value |
+| 0x014 | 0x30 | JMP loop |
+| 0x015 | 0x05 | Loop address low byte |
+| 0x016 | 0x00 | Loop address high byte |
+| 0x017 | 0x2D | found: HLOW |
+| 0x018 | 0x03 | OUTN |
+| 0x019 | 0x00 | HALT |
+| 0x01A | 0x20 | not_found: LOADI A |
+| 0x01B | 0xFF | Not-found marker |
+| 0x01C | 0x03 | OUTN |
+| 0x01D | 0x00 | HALT |
+
+#### Test data
+
+The eight bytes are `10 20 30 41 50 60 70 80`.
+
+Expected output: `3`, because `0x41` is at index 3 (address `0x803`).
+
+If the value is absent, the program outputs `255`.

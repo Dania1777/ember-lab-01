@@ -20,16 +20,16 @@ void step(CPU& cpu) {
     case OP_NOP:
         cpu.pc += 1;
         break;
-    
+
         case OP_OUT:
         std::cout << static_cast<char>(cpu.a);
         cpu.pc += 1;
         break;
 
     case OP_OUTN:
-        std::cout << static_cast<int>(cpu.a);
-        cpu.pc += 1;
-        break;
+    std::cout << static_cast<int>(cpu.a) << ' ';
+    cpu.pc += 1;
+    break;
         case OP_LOADI_A:
         cpu.a = mem_get(*cpu.mem, cpu.pc + 1);
         cpu.pc += 2;
@@ -39,7 +39,7 @@ void step(CPU& cpu) {
         cpu.b = mem_get(*cpu.mem, cpu.pc + 1);
         cpu.pc += 2;
         break;
-        
+
         case OP_LOAD_A:
         cpu.a = mem_get(*cpu.mem, get16(*cpu.mem, cpu.pc + 1));
         cpu.pc += 3;
@@ -89,7 +89,7 @@ void step(CPU& cpu) {
     case OP_DECH:
         cpu.h -= 1;
         cpu.pc += 1;
-        break;                        
+        break;
 
     case OP_ADD:
         cpu.a = alu_add(cpu.a, cpu.b, cpu.f);
@@ -141,8 +141,41 @@ void step(CPU& cpu) {
         cpu.pc += 1;
         break;
 
-    default:
+        case OP_CMP:
+        alu_sub(cpu.a, cpu.b, cpu.f);
         cpu.pc += 1;
+        break;
+
+    case OP_HLOW:
+        cpu.a = static_cast<Byte>(cpu.h & 0xFF);
+        cpu.pc += 1;
+        break;
+
+    case OP_JMP:
+        cpu.pc = get16(*cpu.mem, cpu.pc + 1);
+        break;
+
+    case OP_JZ:
+        if (cpu.f.z) {
+            cpu.pc = get16(*cpu.mem, cpu.pc + 1);
+        } else {
+            cpu.pc += 3;
+        }
+        break;
+
+    case OP_JNZ:
+        if (!cpu.f.z) {
+            cpu.pc = get16(*cpu.mem, cpu.pc + 1);
+        } else {
+            cpu.pc += 3;
+        }
+        break;
+
+    default:
+        std::cout << "unknown opcode 0x"
+                  << std::hex << static_cast<int>(op)
+                  << std::dec << '\n';
+        cpu.halted = true;
         break;
     }
 }
