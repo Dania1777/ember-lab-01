@@ -418,3 +418,133 @@ The eight bytes are `10 20 30 41 50 60 70 80`.
 Expected output: `3`, because `0x41` is at index 3 (address `0x803`).
 
 If the value is absent, the program outputs `255`.
+---
+
+## Lab 5 — Arrays, Strings, Search and Screen
+
+### Screen and video memory
+
+Implemented a 64×32 monochrome screen.
+
+The screen uses 256 bytes of the existing `Memory` array. Video memory (VRAM) occupies addresses `0xA00–0xAFF`.
+
+Each pixel uses one bit:
+- `#` — lit pixel.
+- `.` — unlit pixel.
+
+There are 8 bytes per row because each byte stores 8 pixels.
+
+### Pixel address calculation
+
+The byte address for pixel `(x, y)` is:
+
+```text
+address = 0xA00 + y * 8 + x / 8
+```
+
+The bit position inside the byte is:
+
+```text
+bit = 7 - (x % 8)
+```
+
+The most significant bit represents the leftmost pixel in each byte.
+
+To turn a pixel on:
+
+```cpp
+mem.data[address] |= (1u << bit);
+```
+
+To turn a pixel off:
+
+```cpp
+mem.data[address] &= ~(1u << bit);
+```
+
+### Screen functions
+
+Implemented in `src/screen.cpp`:
+
+- `clear()` — clears all 256 bytes of video memory.
+- `plot()` — turns on a pixel at the specified coordinates.
+- `unplot()` — turns off a pixel.
+- `show()` — prints the 64×32 screen using `#` and `.`.
+
+Coordinates outside the screen boundaries are rejected.
+
+### Screen commands
+
+```text
+ember> plot 0 0
+ember> plot 10 5
+ember> plot 63 31
+ember> show
+```
+
+The screen displays three pixels at the specified coordinates.
+
+The `clear` command clears the screen, and `show` displays the empty screen.
+
+### CPU screen instructions
+
+Added the following opcodes:
+
+| Instruction | Opcode | Description |
+|---|---:|---|
+| OUTS | 0x04 | Print a null-terminated string, up to 256 bytes |
+| CLS | 0x40 | Clear video memory |
+| PLOT | 0x41 | Draw a pixel using A as x and B as y |
+| UNPLOT | 0x42 | Clear a pixel using A as x and B as y |
+| SHOW | 0x43 | Display the screen |
+
+The CPU screen instructions use the same video memory as the host screen commands.
+
+### OUTS string output
+
+`OUTS` reads a string from guest memory until it encounters the null terminator (`0`) or reaches the 256-byte limit.
+
+Test:
+
+```text
+ember> set 0 4
+ember> set 1 0
+ember> set 2 8
+ember> set 3 0
+ember> set 2048 72
+ember> set 2049 69
+ember> set 2050 76
+ember> set 2051 76
+ember> set 2052 79
+ember> set 2053 0
+ember> run
+HELLO
+```
+
+### Verification
+
+The project builds successfully:
+
+```bash
+cmake --build build
+```
+
+Verified:
+- Drawing pixels at different screen coordinates.
+- Clearing the screen.
+- Rejecting invalid pixel coordinates.
+- Executing `CLS`, `PLOT` and `SHOW` through the CPU.
+- Printing `HELLO` using the `OUTS` instruction.
+
+### Video memory size
+
+A 64×32 screen contains 2048 pixels.
+
+At one bit per pixel:
+
+```text
+64 * 32 = 2048 bits
+2048 / 8 = 256 bytes
+```
+
+Video memory can also be inspected using the existing `dump` command.
