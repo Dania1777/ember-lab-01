@@ -9,6 +9,7 @@ add_executable(ember
     src/main.cpp
     src/memory.cpp
     src/dump.cpp
+    src/screen.cpp
     src/alu.cpp
     src/cpu.cpp
 )

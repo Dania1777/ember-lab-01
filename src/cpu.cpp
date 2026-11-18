@@ -1,6 +1,7 @@
 
 #include "cpu.hpp"
 #include "alu.hpp"
+#include "screen.hpp"
 #include <iostream>
 
 void step(CPU& cpu) {
@@ -30,6 +31,20 @@ void step(CPU& cpu) {
     std::cout << static_cast<int>(cpu.a) << ' ';
     cpu.pc += 1;
     break;
+    case OP_OUTS: {
+    std::uint16_t addr = get16(*cpu.mem, cpu.pc + 1);
+
+    for (int i = 0; i < 256; ++i) {
+        Byte ch = mem_get(*cpu.mem, static_cast<std::size_t>(addr) + i);
+        if (ch == 0) {
+            break;
+        }
+        std::cout << static_cast<char>(ch);
+    }
+
+    cpu.pc += 3;
+    break;
+}
         case OP_LOADI_A:
         cpu.a = mem_get(*cpu.mem, cpu.pc + 1);
         cpu.pc += 2;
@@ -170,6 +185,25 @@ void step(CPU& cpu) {
             cpu.pc += 3;
         }
         break;
+        case OP_CLS:
+    clear(*cpu.mem);
+    cpu.pc += 1;
+    break;
+
+case OP_PLOT:
+    cpu.f.c = !plot(*cpu.mem, cpu.a, cpu.b);
+    cpu.pc += 1;
+    break;
+
+case OP_UNPLOT:
+    cpu.f.c = !unplot(*cpu.mem, cpu.a, cpu.b);
+    cpu.pc += 1;
+    break;
+
+case OP_SHOW:
+    show(*cpu.mem);
+    cpu.pc += 1;
+    break;
 
     default:
         std::cout << "unknown opcode 0x"

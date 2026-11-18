@@ -39,6 +39,11 @@ const Byte OP_CMP = 0x1A;
 const Byte OP_JMP = 0x30;
 const Byte OP_JZ  = 0x31;
 const Byte OP_JNZ = 0x32;
+const Byte OP_OUTS = 0x04;
+const Byte OP_CLS = 0x40;
+const Byte OP_PLOT = 0x41;
+const Byte OP_UNPLOT = 0x42;
+const Byte OP_SHOW = 0x43;
 struct Flags {
     bool z = false;
     bool n = false;

@@ -14,6 +14,7 @@
 #include "memory.hpp"
 #include "cpu.hpp"
 #include "alu.hpp"
+#include "screen.hpp"
 
 // Turn a word into a number. Accepts decimal (65) and hex (0x41).
 // Returns false if the word is not a number at all.
@@ -45,6 +46,10 @@ static std::uint16_t find_byte(
 static void print_help() {
     std::cout << "commands:\n"
               << "  dump              print all " << MEM_SIZE << " bytes\n"
+              << "  find <lo> <hi> <val> search for a byte\n"
+              << "  clear             clear the screen\n"
+              << "  plot <x> <y>       light one pixel\n"
+              << "  show              print the screen\n"
               << "  get <addr>        show one byte four ways\n"
               << "  set <addr> <val>  write one byte (dec or 0x hex)\n"
               << "  inc <addr>        increment byte at address\n"
@@ -89,6 +94,20 @@ cpu.mem = &mem;
             print_help();
         } else if (cmd == "dump") {
             dump(mem);
+            } else if (cmd == "clear") {
+    clear(mem);
+} else if (cmd == "plot") {
+    std::string sx, sy;
+    long x = 0, y = 0;
+
+    if (!(words >> sx >> sy) ||
+        !parse_number(sx, x) || !parse_number(sy, y)) {
+        std::cout << "usage: plot <x> <y>\n";
+    } else if (!plot(mem, static_cast<int>(x), static_cast<int>(y))) {
+        std::cout << "coordinates must be x=0..63, y=0..31\n";
+    }
+} else if (cmd == "show") {
+    show(mem);
         } else if (cmd == "get") {
             std::string a;
             long addr = 0;
