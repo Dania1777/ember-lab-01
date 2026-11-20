@@ -4,46 +4,21 @@
 #include <cstdint>
 #include "memory.hpp"
 
-const Byte OP_HALT = 0x00;
-const Byte OP_NOP  = 0x01;
-const Byte OP_ADD  = 0x10;
-const Byte OP_SUB  = 0x11;
-const Byte OP_AND  = 0x12;
-const Byte OP_OR   = 0x13;
-const Byte OP_XOR  = 0x14;
-const Byte OP_NOT  = 0x15;
-const Byte OP_SHL  = 0x16;
-const Byte OP_SHR  = 0x17;
-const Byte OP_INC  = 0x18;
-const Byte OP_DEC  = 0x19;
-const Byte OP_OUT   = 0x02;
-const Byte OP_OUTN  = 0x03;
-
-const Byte OP_LOADI_A = 0x20;
-const Byte OP_LOADI_B = 0x21;
-const Byte OP_LOAD_A  = 0x22;
-const Byte OP_LOAD_B  = 0x23;
-const Byte OP_STORE_A = 0x24;
-const Byte OP_STORE_B = 0x25;
-const Byte OP_MOV_A_B = 0x26;
-const Byte OP_MOV_B_A = 0x27;
-const Byte OP_LOADH  = 0x28;
-const Byte OP_LOAD_A_H = 0x29;
-const Byte OP_STORE_A_H = 0x2A;
-const Byte OP_INCH = 0x2B;
-const Byte OP_DECH = 0x2C;
-const Byte OP_HLOW = 0x2D;
-
-const Byte OP_CMP = 0x1A;
-
-const Byte OP_JMP = 0x30;
-const Byte OP_JZ  = 0x31;
-const Byte OP_JNZ = 0x32;
-const Byte OP_OUTS = 0x04;
-const Byte OP_CLS = 0x40;
-const Byte OP_PLOT = 0x41;
-const Byte OP_UNPLOT = 0x42;
-const Byte OP_SHOW = 0x43;
+enum class Op : Byte {
+    HALT = 0x00, NOP = 0x01,
+    OUT = 0x02, OUTN = 0x03, OUTS = 0x04,
+    ADD = 0x10, SUB = 0x11, AND = 0x12, OR = 0x13,
+    XOR = 0x14, NOT = 0x15, SHL = 0x16, SHR = 0x17,
+    INC = 0x18, DEC = 0x19, CMP = 0x1A,
+    LOADI_A = 0x20, LOADI_B = 0x21,
+    LOAD_A = 0x22, LOAD_B = 0x23,
+    STORE_A = 0x24, STORE_B = 0x25,
+    MOV_A_B = 0x26, MOV_B_A = 0x27,
+    LOADH = 0x28, LOAD_A_H = 0x29, STORE_A_H = 0x2A,
+    INCH = 0x2B, DECH = 0x2C, HLOW = 0x2D,
+    JMP = 0x30, JZ = 0x31, JNZ = 0x32,
+    CLS = 0x40, PLOT = 0x41, UNPLOT = 0x42, SHOW = 0x43
+};
 struct Flags {
     bool z = false;
     bool n = false;

@@ -548,3 +548,106 @@ At one bit per pixel:
 ```
 
 Video memory can also be inspected using the existing `dump` command.
+## Lab 6 — Named Bundles: Structs, Enums and Heap
+
+### 1. Enum class
+
+У лабораторній роботі звичайні константи `OP_*` були замінені на перелічуваний тип `enum class Op : Byte`.
+
+Кожна операція процесора має власне ім'я та числовий код. Значення кодів залишилися незмінними, тому сумісність із програмами попередніх лабораторних робіт збережена.
+
+У функції `step()` отриманий із пам'яті байт перетворюється на тип `Op`:
+
+```cpp
+Byte raw_op = mem_get(*cpu.mem, cpu.pc);
+Op op = static_cast<Op>(raw_op);
+```
+
+Після цього операція обробляється через `switch` із використанням назв `Op::HALT`, `Op::ADD`, `Op::SUB` та інших.
+
+`enum class` забезпечує типобезпечність і не дозволяє випадково використовувати значення переліку як звичайні цілі числа без явного перетворення.
+
+### 2. CPU structure size and memory alignment
+
+Для перевірки розміру структур використано `sizeof`, `alignof` та `offsetof`.
+
+Результати вимірювання на 64-бітній системі:
+
+| Елемент | Розмір / зміщення |
+|---|---:|
+| `sizeof(Flags)` | 3 bytes |
+| `sizeof(CPU)` | 24 bytes |
+| `alignof(CPU)` | 8 bytes |
+| `mem` offset | 0 |
+| `pc` offset | 8 |
+| `h` offset | 10 |
+| `a` offset | 12 |
+| `b` offset | 13 |
+| `f` offset | 14 |
+| `halted` offset | 17 |
+
+Покажчик `mem` займає 8 байтів. Поля структури розташовуються з урахуванням вимог вирівнювання пам'яті (alignment).
+
+Після останнього поля `halted` залишаються 6 байтів padding. Тому фактичний розмір структури `CPU` становить 24 байти, хоча самі поля займають 18 байтів.
+
+### 3. Dynamic memory allocation
+
+Динамічна пам'ять виділяється оператором `new`, а звільняється оператором `delete`.
+
+Приклад:
+
+```cpp
+int* p = new int(42);
+delete p;
+```
+
+Після `delete` пам'ять більше не належить програмі. Вказівник `p` стає висячим (dangling pointer), тому його не можна використовувати для доступу до звільненої пам'яті.
+
+### 4. AddressSanitizer tests
+
+Для демонстрації помилок роботи з динамічною пам'яттю було створено окремі тестові програми та перевірено їх за допомогою AddressSanitizer.
+
+**Test 1 — Use-after-free**
+
+```cpp
+int main() {
+    int* p = new int(42);
+    delete p;
+    return *p;
+}
+```
+
+Після звільнення пам'яті програма намагається прочитати значення через вказівник `p`.
+
+AddressSanitizer виявив помилку:
+
+```text
+ERROR: AddressSanitizer: heap-use-after-free
+```
+
+**Test 2 — Double-free**
+
+```cpp
+int main() {
+    int* p = new int(42);
+    delete p;
+    delete p;
+}
+```
+
+У цьому випадку одна й та сама ділянка пам'яті звільняється двічі.
+
+AddressSanitizer виявив помилку:
+
+```text
+ERROR: AddressSanitizer: attempting double-free
+SUMMARY: AddressSanitizer: double-free
+```
+
+Обидва тести підтверджують, що AddressSanitizer допомагає виявляти помилки керування динамічною пам'яттю.
+
+### 5. Conclusion
+
+Під час лабораторної роботи було замінено константи операцій на `enum class Op`, перевірено розмір і вирівнювання структур `Flags` та `CPU`, а також досліджено виділення і звільнення динамічної пам'яті.
+
+За допомогою AddressSanitizer було продемонстровано помилки `heap-use-after-free` та `double-free`.
